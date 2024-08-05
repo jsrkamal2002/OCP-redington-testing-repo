@@ -1,0 +1,5 @@
+oc create secret docker-registry dockerhub-secret \
+    --docker-server=https://index.docker.io/v1/ \
+    --docker-username=jsrkamal \
+    --docker-password=Kamal2002* \
+    --docker-email=veerammarish89@gmail.com

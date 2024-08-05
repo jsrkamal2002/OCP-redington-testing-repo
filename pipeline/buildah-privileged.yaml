@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-privileged
+spec:
+  params:
+    - name: IMAGE
+      description: Reference of the image buildah will produce.
+    - name: DOCKERFILE
+      description: Path to the Dockerfile to build.
+      default: ./Dockerfile
+    - name: CONTEXT
+      description: Path to the directory to use as context.
+      default: .
+  workspaces:
+    - name: source
+  steps:
+    - name: build-and-push
+      image: quay.io/buildah/stable:v1.23.1
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        privileged: true
+      script: |
+        buildah bud --tls-verify=false --layers -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
+        buildah push --tls-verify=false $(params.IMAGE)

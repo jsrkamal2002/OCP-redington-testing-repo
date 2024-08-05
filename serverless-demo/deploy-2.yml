@@ -1,0 +1,27 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld-go
+spec:
+  template:
+    metadata:
+      annotations:
+        # Ensure at least one container is always running
+        autoscaling.knative.dev/minScale: "1"
+        # Allow scaling up to 10 containers
+        autoscaling.knative.dev/maxScale: "10"
+        # Target 10 concurrent requests per container
+        autoscaling.knative.dev/target: "10"
+    spec:
+      containers:
+        - image: gcr.io/knative-samples/helloworld-go
+          env:
+            - name: TARGET
+              value: "Go Sample v1"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

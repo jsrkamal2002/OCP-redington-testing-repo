@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 9090
+        env:
+        - name: NGINX_PORT
+          value: "9090"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            mkdir -p /tmp/nginx/cache
+            echo '
+            worker_processes  1;
+            error_log  /dev/stdout warn;
+            pid        /tmp/nginx.pid;
+            events {
+                worker_connections  1024;
+            }
+            http {
+                client_body_temp_path /tmp/nginx/cache/client_temp;
+                proxy_temp_path       /tmp/nginx/cache/proxy_temp;
+                fastcgi_temp_path     /tmp/nginx/cache/fastcgi_temp;
+                uwsgi_temp_path       /tmp/nginx/cache/uwsgi_temp;
+                scgi_temp_path        /tmp/nginx/cache/scgi_temp;
+                
+                server {
+                    listen       ${NGINX_PORT};
+                    server_name  localhost;
+                    location / {
+                        root   /usr/share/nginx/html;
+                        index  index.html index.htm;
+                    }
+                }
+            }' > /tmp/nginx.conf
+            envsubst < /tmp/nginx.conf > /tmp/nginx.conf.tmp && mv /tmp/nginx.conf.tmp /tmp/nginx.conf
+            nginx -g 'daemon off;' -c /tmp/nginx.conf

@@ -1,0 +1,6 @@
+oc new-project scaling-demo
+oc apply -f .
+oc get hpa nginx-hpa --watch
+oc get pods -l app=nginx --watch
+oc get pods
+bash load_test.sh 

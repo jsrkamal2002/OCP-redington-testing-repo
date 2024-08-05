@@ -1,0 +1,41 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: centos9-vm-with-pvc-trial1
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: centos9-vm-with-pvc-trial1
+    spec:
+      domain:
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+          - disk:
+              bus: virtio
+            name: persistentdisk
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: '1'
+      volumes:
+      - containerDisk:
+          image: quay.io/kubevirt/fedora-container-disk-demo:latest
+        name: containerdisk
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            user: centos
+            password: centos
+            chpasswd: { expire: False }
+        name: cloudinitdisk
+      - name: persistentdisk
+        persistentVolumeClaim:
+          claimName: trial-3
